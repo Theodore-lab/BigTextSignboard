@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Big Text Signboard</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --text-color: #FFDE00;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        /* Input Screen Setup */
+        #input-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            padding: 20px;
+            padding-top: calc(20px + env(safe-area-inset-top));
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+            padding-left: calc(20px + env(safe-area-inset-left));
+            padding-right: calc(20px + env(safe-area-inset-right));
+            background-color: #121212;
+            color: #ffffff;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        textarea {
+            width: 100%;
+            max-width: 500px;
+            height: 140px;
+            padding: 18px;
+            font-size: 1.3rem;
+            border: 2px solid #333;
+            border-radius: 12px;
+            background-color: #222;
+            color: #fff;
+            resize: none;
+            margin-bottom: 20px;
+            outline: none;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.3;
+        }
+
+        textarea:focus {
+            border-color: #FFDE00;
+        }
+
+        /* Theme Selector Styling */
+        .theme-container {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .theme-btn {
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .theme-yb { background-color: #000; color: #FFDE00; border-color: #333; }
+        .theme-wb { background-color: #000; color: #fff; border-color: #333; }
+        .theme-bw { background-color: #fff; color: #000; border-color: #ccc; }
+
+        .theme-btn.active {
+            border-color: #00bcd4;
+            box-shadow: 0 0 8px rgba(0,188,212,0.6);
+        }
+
+        .action-btn {
+            width: 100%;
+            max-width: 500px;
+            padding: 16px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            background-color: #FFDE00;
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .action-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Display Screen Setup with strict Safe Area Insets */
+        #display-screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            justify-content: center;
+            align-items: center;
+            padding-top: calc(15px + env(safe-area-inset-top));
+            padding-bottom: calc(15px + env(safe-area-inset-bottom));
+            padding-left: calc(15px + env(safe-area-inset-left));
+            padding-right: calc(15px + env(safe-area-inset-right));
+            overflow: hidden;
+        }
+
+        #text-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: 900;
+            text-align: center;
+            white-space: pre-wrap;
+            word-break: normal;
+            overflow-wrap: normal;
+            line-height: 1.05;
+            text-transform: uppercase;
+        }
+
+        #text-container div {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            white-space: nowrap;
+            word-break: normal;
+            overflow-wrap: normal;
+            text-align: center;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: calc(15px + env(safe-area-inset-top));
+            left: calc(15px + env(safe-area-inset-left));
+            background-color: rgba(128, 128, 128, 0.3);
+            color: inherit;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            border-radius: 20px;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            font-weight: bold;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SCREEN 1: User Input -->
+    <div id="input-screen">
+        <div class="title">Enter Text</div>
+        <textarea id="user-input" placeholder="Type here..." autocomplete="off"></textarea>
+
+        <div class="title" style="font-size: 1.1rem; margin-bottom: 10px;">Select Theme</div>
+        <div class="theme-container">
+            <button class="theme-btn theme-yb active" onclick="setTheme('#000000', '#FFDE00', this)">Yellow / Black</button>
+            <button class="theme-btn theme-wb" onclick="setTheme('#000000', '#ffffff', this)">White / Black</button>
+            <button class="theme-btn theme-bw" onclick="setTheme('#ffffff', '#000000', this)">Black / White</button>
+        </div>
+
+        <button class="action-btn" onclick="showSignboard()">Display Fullscreen</button>
+    </div>
+
+    <!-- SCREEN 2: Max-Size Banner -->
+    <div id="display-screen">
+        <button class="back-btn" onclick="hideSignboard()">✕</button>
+        <div id="text-container"></div>
+    </div>
+
+    <script>
+        let currentBg = "#000000";
+        let currentText = "#FFDE00";
+
+        function setTheme(bg, text, buttonElement) {
+            currentBg = bg;
+            currentText = text;
+
+            document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+            buttonElement.classList.add('active');
+        }
+
+        function handleResize() {
+            const rawVal = document.getElementById('user-input').value.trim();
+            if (rawVal) {
+                resizeText(rawVal);
+            }
+        }
+
+        function showSignboard() {
+            const val = document.getElementById('user-input').value.trim();
+            if (!val) return;
+
+            document.documentElement.style.setProperty('--bg-color', currentBg);
+            document.documentElement.style.setProperty('--text-color', currentText);
+
+            document.getElementById('input-screen').style.display = 'none';
+            document.getElementById('display-screen').style.display = 'flex';
+
+            setTimeout(() => {
+                resizeText(val);
+                window.addEventListener('resize', handleResize);
+                if (window.visualViewport) window.visualViewport.addEventListener('resize', handleResize);
+            }, 30);
+        }
+
+        function hideSignboard() {
+            document.getElementById('input-screen').style.display = 'flex';
+            document.getElementById('display-screen').style.display = 'none';
+            window.removeEventListener('resize', handleResize);
+            if (window.visualViewport) window.visualViewport.removeEventListener('resize', handleResize);
+        }
+
+        /**
+         * Dynamic Binary Search Auto-Fit Scaling
+         * Uses clientWidth and clientHeight of container after safe-area padding
+         */
+        function resizeText(rawText) {
+            const container = document.getElementById('text-container');
+            if (!container || !rawText) return;
+
+            // Measure inner content box after padding & env(safe-area-inset)
+            const rect = container.getBoundingClientRect();
+            // Use nearly all available space while keeping a small safety margin
+            // for browser/font differences across phones, tablets, and PCs.
+            const targetW = rect.width * 0.94;
+            const targetH = rect.height * 0.92;
+
+            if (targetW <= 0 || targetH <= 0) return;
+
+            // Preserve explicit line breaks entered by user
+            // Measure the exact uppercase text that will be displayed.
+            // Measuring the original lowercase text can underestimate wide words
+            // (for example, AND), causing the rendered line to spill off-screen.
+            const paragraphs = rawText.toUpperCase().split('\n');
+
+            let minFont = 1;
+            let maxFont = Math.min(1000, Math.max(targetW, targetH));
+            let bestFont = minFont;
+
+            // Binary search for maximum font size that safely fits constraints
+            while (minFont <= maxFont) {
+                let mid = Math.floor((minFont + maxFont) / 2);
+
+                if (checkFits(paragraphs, mid, targetW, targetH)) {
+                    bestFont = mid;
+                    minFont = mid + 1; // Try larger font
+                } else {
+                    maxFont = mid - 1; // Too big, scale down
+                }
+            }
+
+            // Render text layout at calculated best font size
+            renderLayout(container, paragraphs, bestFont, targetW);
+        }
+
+        /**
+         * Validates if text fits within target width and height limits
+         */
+        function checkFits(paragraphs, fontSize, maxWidth, maxHeight) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.font = `900 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+
+            let totalLines = 0;
+
+            for (let p = 0; p < paragraphs.length; p++) {
+                const words = paragraphs[p].trim().split(/\s+/).filter(w => w.length > 0);
+                if (words.length === 0) {
+                    totalLines++;
+                    continue;
+                }
+
+                let currentLineWidth = 0;
+
+                for (let i = 0; i < words.length; i++) {
+                    const wordWidth = ctx.measureText(words[i]).width;
+                    const spaceWidth = ctx.measureText(' ').width;
+
+                    // If a single word is wider than screen bounds, font is too large
+                    if (wordWidth > maxWidth) return false;
+
+                    if (currentLineWidth === 0) {
+                        currentLineWidth = wordWidth;
+                        totalLines++;
+                    } else if (currentLineWidth + spaceWidth + wordWidth <= maxWidth) {
+                        currentLineWidth += spaceWidth + wordWidth;
+                    } else {
+                        totalLines++;
+                        currentLineWidth = wordWidth;
+                    }
+                }
+            }
+
+            const totalHeight = totalLines * (fontSize * 1.05);
+            return totalHeight <= maxHeight;
+        }
+
+        /**
+         * Renders the computed line-wrapped text into the DOM container
+         */
+        function renderLayout(container, paragraphs, fontSize, maxWidth) {
+            container.innerHTML = '';
+            container.style.fontSize = fontSize + 'px';
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.font = `900 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+
+            paragraphs.forEach((para) => {
+                const words = para.trim().split(/\s+/).filter(w => w.length > 0);
+
+                if (words.length === 0) {
+                    const emptyLine = document.createElement('div');
+                    emptyLine.innerHTML = '&nbsp;';
+                    container.appendChild(emptyLine);
+                    return;
+                }
+
+                let currentLine = [];
+                let currentLineWidth = 0;
+
+                words.forEach((word) => {
+                    const wordWidth = ctx.measureText(word).width;
+                    const spaceWidth = ctx.measureText(' ').width;
+
+                    if (currentLineWidth === 0) {
+                        currentLine.push(word);
+                        currentLineWidth = wordWidth;
+                    } else if (currentLineWidth + spaceWidth + wordWidth <= maxWidth) {
+                        currentLine.push(word);
+                        currentLineWidth += spaceWidth + wordWidth;
+                    } else {
+                        const lineDiv = document.createElement('div');
+                        lineDiv.textContent = currentLine.join(' ');
+                        container.appendChild(lineDiv);
+
+                        currentLine = [word];
+                        currentLineWidth = wordWidth;
+                    }
+                });
+
+                if (currentLine.length > 0) {
+                    const lineDiv = document.createElement('div');
+                    lineDiv.textContent = currentLine.join(' ');
+                    container.appendChild(lineDiv);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
