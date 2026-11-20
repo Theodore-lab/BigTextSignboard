@@ -8,29 +8,33 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v4
 
-    - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 20
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
 
-    - name: Install Cordova
-      run: npm install -g cordova
+      - uses: android-actions/setup-android@v3
 
-    - name: Add Android Platform
-      run: cordova platform add android
+      - name: Install Cordova
+        run: npm install -g cordova
 
-    - name: Build APK
-      run: cordova build android
+      - name: Add Android Platform
+        run: cordova platform add android
 
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: BigTextSignboard-APK
-        path: |
-          platforms/android/app/build/outputs/apk/**/*.apk
+      - name: Build APK
+        run: cordova build android --verbose
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: BigTextSignboard-APK
+          path: platforms/android/app/build/outputs/apk/**/*.apk
